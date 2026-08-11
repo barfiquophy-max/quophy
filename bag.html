@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shopping Bag | QUOPHY</title>
+<meta name="description" content="Review the pieces in your QUOPHY shopping bag and proceed to checkout.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<div data-shell="header"></div>
+
+<main id="main" class="section">
+  <div class="wrap">
+    <h1 class="display display--h1 mb-6">Shopping Bag</h1>
+    <div class="bag-layout">
+      <section aria-label="Items in your bag">
+        <div data-bag-lines></div>
+        <p class="plp-empty" data-bag-empty hidden>
+          Your shopping bag is empty. <a class="link-underline" href="collections.html">Browse the collection</a>
+        </p>
+      </section>
+      <aside class="summary" aria-label="Order summary" data-bag-summary hidden>
+        <h2 class="panel__title">Order summary</h2>
+        <p class="summary__row"><span>Subtotal</span><span data-bag-subtotal>—</span></p>
+        <p class="summary__row"><span>Shipping</span><span>Complimentary</span></p>
+        <p class="summary__row"><span>Estimated tax</span><span data-bag-tax>—</span></p>
+        <p class="summary__row summary__row--total"><span>Total</span><span data-bag-total>—</span></p>
+        <button class="btn btn--full" data-checkout>Proceed to checkout</button>
+        <p class="summary__note">Complimentary express shipping, signature packaging and free returns within 30 days.</p>
+      </aside>
+    </div>
+  </div>
+</main>
+
+<div data-shell="footer"></div>
+
+<script src="assets/js/data.js"></script>
+<script src="assets/js/site.js"></script>
+<script src="assets/js/bag.js"></script>
+</body>
+</html>
