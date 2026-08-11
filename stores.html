@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Store Locator | QUOPHY</title>
+<meta name="description" content="Find a QUOPHY boutique in Milan, New York, London, Accra, Tokyo and Paris.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<div data-shell="header"></div>
+
+<main id="main" class="section">
+  <div class="wrap">
+    <div class="story text-center mb-6">
+      <p class="eyebrow">Store Locator</p>
+      <h1 class="display display--h1">Boutiques</h1>
+      <form class="newsletter__form center-x" data-store-search role="search">
+        <label class="visually-hidden" for="store-query">Search by city or country</label>
+        <input id="store-query" type="search" placeholder="City or country" autocomplete="off">
+      </form>
+    </div>
+    <div class="grid grid--3" data-stores></div>
+    <p class="plp-empty" data-stores-empty hidden>No boutique matches that search.</p>
+  </div>
+</main>
+
+<div data-shell="footer"></div>
+
+<script src="assets/js/data.js"></script>
+<script src="assets/js/site.js"></script>
+<script src="assets/js/stores.js"></script>
+</body>
+</html>

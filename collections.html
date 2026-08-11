@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Collections | QUOPHY</title>
+<meta name="description" content="Browse handbags, ready-to-wear, shoes and accessories from the QUOPHY Primavera collection.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<div data-shell="header"></div>
+
+<main id="main">
+  <section class="plp-hero">
+    <img src="assets/img/editorial/campaign-women.jpg" alt="" aria-hidden="true" width="1600" height="600">
+    <div class="wrap plp-hero__content">
+      <h1 class="display plp-hero__title" data-plp-title>The Collection</h1>
+      <p class="plp-hero__text" data-plp-blurb></p>
+    </div>
+  </section>
+
+  <div class="wrap">
+    <nav aria-label="Breadcrumb">
+      <ol class="breadcrumbs" data-breadcrumbs></ol>
+    </nav>
+    <nav class="subnav" aria-label="Category" data-subnav></nav>
+
+    <div class="plp-bar">
+      <p class="plp-bar__count"><span data-plp-count>0</span> items</p>
+      <div class="plp-bar__tools">
+        <button class="link-underline" data-open="filters" aria-expanded="false">Filter and sort</button>
+      </div>
+    </div>
+
+    <ul class="chips" data-chips></ul>
+
+    <div class="grid grid--4" data-plp-grid></div>
+    <p class="plp-empty" data-plp-empty hidden>No pieces match these filters. <button class="link-underline" data-clear-filters>Clear all</button></p>
+  </div>
+</main>
+
+<aside class="panel" id="panel-filters" role="dialog" aria-modal="true" aria-label="Filter and sort" data-panel="filters">
+  <div class="panel__head">
+    <span class="panel__title">Filter and sort</span>
+    <button class="icon-btn" data-close aria-label="Close filters">
+      <svg viewBox="0 0 24 24" aria-hidden="true" style="width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.2"><path d="m6 6 12 12M18 6 6 18"/></svg>
+    </button>
+  </div>
+  <div class="panel__body">
+    <form class="filters" data-filters>
+      <fieldset class="filters__group">
+        <legend class="filters__legend">Sort by</legend>
+        <label class="filters__opt"><input type="radio" name="sort" value="recommended" checked> Recommended</label>
+        <label class="filters__opt"><input type="radio" name="sort" value="new"> Newest</label>
+        <label class="filters__opt"><input type="radio" name="sort" value="price-asc"> Price: low to high</label>
+        <label class="filters__opt"><input type="radio" name="sort" value="price-desc"> Price: high to low</label>
+      </fieldset>
+      <fieldset class="filters__group">
+        <legend class="filters__legend">Category</legend>
+        <div data-filter-categories></div>
+      </fieldset>
+      <fieldset class="filters__group">
+        <legend class="filters__legend">Collection</legend>
+        <label class="filters__opt"><input type="checkbox" name="gender" value="women"> Women</label>
+        <label class="filters__opt"><input type="checkbox" name="gender" value="men"> Men</label>
+      </fieldset>
+      <fieldset class="filters__group">
+        <legend class="filters__legend">Price</legend>
+        <label class="filters__opt"><input type="checkbox" name="price" value="0-1000"> Under $1,000</label>
+        <label class="filters__opt"><input type="checkbox" name="price" value="1000-2500"> $1,000 – $2,500</label>
+        <label class="filters__opt"><input type="checkbox" name="price" value="2500-99999"> Over $2,500</label>
+      </fieldset>
+    </form>
+  </div>
+  <div class="panel__foot panel__foot--stack">
+    <button class="btn btn--full" data-close>Show <span data-plp-count>0</span> items</button>
+    <button class="btn btn--ghost btn--full" data-clear-filters>Clear all</button>
+  </div>
+</aside>
+
+<div data-shell="footer"></div>
+
+<script src="assets/js/data.js"></script>
+<script src="assets/js/site.js"></script>
+<script src="assets/js/collections.js"></script>
+</body>
+</html>
