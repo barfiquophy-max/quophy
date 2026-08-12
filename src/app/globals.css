@@ -1,0 +1,42 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --header-height: 56px;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  background: #fff;
+  color: #000;
+}
+
+@layer components {
+  .site-padding {
+    @apply px-4 md:px-6 lg:px-8;
+  }
+
+  .eyebrow {
+    @apply text-tiny uppercase tracking-[0.12em];
+  }
+
+  .link-underline {
+    @apply relative inline-block after:absolute after:bottom-0 after:left-0 after:h-px after:w-full after:origin-right after:scale-x-0 after:bg-current after:transition-transform after:duration-300 hover:after:origin-left hover:after:scale-x-100;
+  }
+
+  .btn-primary {
+    @apply inline-flex h-12 w-full items-center justify-center bg-ink px-6 text-label uppercase tracking-[0.08em] text-paper transition-opacity hover:opacity-80 disabled:cursor-not-allowed disabled:opacity-40;
+  }
+
+  .btn-secondary {
+    @apply inline-flex h-12 w-full items-center justify-center border border-ink bg-paper px-6 text-label uppercase tracking-[0.08em] text-ink transition-colors hover:bg-ink hover:text-paper;
+  }
+
+  .field {
+    @apply h-12 w-full border border-line bg-paper px-4 text-sm outline-none transition-colors placeholder:text-muted focus:border-ink;
+  }
+}
