@@ -40,13 +40,29 @@ const ICONS = {
   youtube: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="3"/><path d="m11 10 4 2-4 2z"/></svg>',
 };
 
+/* ---------- persisted state sanitising ---------- */
+const MAX_QTY = 99;
+
+const cleanText = (value) => (typeof value === "string" ? value.slice(0, 100) : "");
+
+const cleanQty = (value) => {
+  const qty = Math.floor(Number(value));
+  if (!Number.isFinite(qty) || qty < 1) return 1;
+  return Math.min(qty, MAX_QTY);
+};
+
 /* ---------- cart ---------- */
 const Bag = {
   key: "quophy.bag",
+  // Stored state can be tampered with (devtools, a shared browser, another
+  // script on the origin), so it is re-validated on every read.
   read() {
     try {
       const raw = JSON.parse(localStorage.getItem(this.key));
-      return Array.isArray(raw) ? raw.filter((l) => getProduct(l.id)) : [];
+      if (!Array.isArray(raw)) return [];
+      return raw
+        .filter((l) => l && typeof l === "object" && getProduct(l.id))
+        .map((l) => ({ id: cleanText(l.id), size: cleanText(l.size), qty: cleanQty(l.qty) }));
     } catch (err) {
       return [];
     }
@@ -62,14 +78,15 @@ const Bag = {
     const lines = this.read();
     const key = this.lineKey(id, size);
     const existing = lines.find((l) => this.lineKey(l.id, l.size) === key);
-    if (existing) existing.qty += qty;
-    else lines.push({ id, size: size || "", qty });
+    if (existing) existing.qty = cleanQty(existing.qty + cleanQty(qty));
+    else lines.push({ id: cleanText(id), size: cleanText(size), qty: cleanQty(qty) });
     this.write(lines);
   },
   setQty(id, size, qty) {
     const lines = this.read()
-      .map((l) => (this.lineKey(l.id, l.size) === this.lineKey(id, size) ? { ...l, qty } : l))
-      .filter((l) => l.qty > 0);
+      .map((l) => (this.lineKey(l.id, l.size) === this.lineKey(id, size) ? { ...l, qty: Number(qty) } : l))
+      .filter((l) => l.qty > 0)
+      .map((l) => ({ ...l, qty: cleanQty(l.qty) }));
     this.write(lines);
   },
   remove(id, size) {
@@ -89,7 +106,7 @@ const Wishlist = {
   read() {
     try {
       const raw = JSON.parse(localStorage.getItem(this.key));
-      return Array.isArray(raw) ? raw : [];
+      return Array.isArray(raw) ? raw.filter((id) => typeof id === "string").map(cleanText) : [];
     } catch (err) {
       return [];
     }
@@ -99,7 +116,7 @@ const Wishlist = {
   },
   toggle(id) {
     const list = this.read();
-    const next = list.includes(id) ? list.filter((x) => x !== id) : [...list, id];
+    const next = list.includes(id) ? list.filter((x) => x !== id) : [...list, cleanText(id)];
     localStorage.setItem(this.key, JSON.stringify(next));
     return next.includes(id);
   },
