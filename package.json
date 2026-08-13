@@ -1,0 +1,17 @@
+{
+  "name": "quophy",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A functional recreation of the Emporio Armani US experience written in plain HTML, CSS and JavaScript.",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "coverage": "vitest run --coverage"
+  },
+  "license": "ISC",
+  "devDependencies": {
+    "@vitest/coverage-v8": "^2.1.9",
+    "jsdom": "^25.0.1",
+    "vitest": "^2.1.9"
+  }
+}
