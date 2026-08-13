@@ -1,5 +1,21 @@
 /* Emporio Armani storefront — vanilla JS application shell, routing and views. */
 (function () {
+  function showFatal(detail) {
+    console.error("[app] " + detail);
+    const view = document.querySelector("#view");
+    if (!view) return;
+    view.innerHTML =
+      '<div class="site-padding" style="padding:96px 16px;text-align:center">' +
+      '<h1 class="page-title">Something went wrong</h1>' +
+      '<p class="muted" style="margin-top:12px">This page could not be displayed. Please reload and try again.</p></div>';
+  }
+
+  const missing = ["Catalog", "Store", "SITE"].filter((name) => !window[name]);
+  if (missing.length) {
+    showFatal("missing global(s): " + missing.join(", ") + " — a script failed to load.");
+    return;
+  }
+
   const C = window.Catalog;
   const S = window.Store;
   const SITE = window.SITE;
@@ -145,13 +161,20 @@
     qsa(".megamenu a", header).forEach((link) => link.addEventListener("click", closeMega));
 
     rotatePromo();
-    setInterval(rotatePromo, 5000);
+    clearInterval(promoTimer);
+    promoTimer = setInterval(rotatePromo, 5000);
   }
 
   let promoIndex = 0;
+  let promoTimer = null;
   function rotatePromo() {
+    const node = qs("#promo");
+    if (!node || !SITE.promos.length) {
+      clearInterval(promoTimer);
+      return;
+    }
     const promo = SITE.promos[promoIndex % SITE.promos.length];
-    qs("#promo").innerHTML =
+    node.innerHTML =
       '<span class="promo-index">' + ((promoIndex % SITE.promos.length) + 1) + " / " + SITE.promos.length + "</span>" +
       '<a href="' + esc(promo.href) + '">' + esc(promo.text) + "</a>";
     promoIndex += 1;
@@ -194,11 +217,15 @@
   function renderBadges() {
     const count = S.cartCount();
     const cartBadge = qs("#cart-badge");
-    cartBadge.textContent = count;
-    cartBadge.classList.toggle("hidden", count === 0);
+    if (cartBadge) {
+      cartBadge.textContent = count;
+      cartBadge.classList.toggle("hidden", count === 0);
+    }
     const wishBadge = qs("#wish-badge");
-    wishBadge.textContent = S.wishlist.length;
-    wishBadge.classList.toggle("hidden", S.wishlist.length === 0);
+    if (wishBadge) {
+      wishBadge.textContent = S.wishlist.length;
+      wishBadge.classList.toggle("hidden", S.wishlist.length === 0);
+    }
     qsa("[data-action='wish']").forEach((btn) => {
       const on = S.isWishlisted(btn.dataset.code);
       btn.classList.toggle("wish-on", on);
@@ -834,14 +861,31 @@
     const [pathPart, queryPart] = raw.split("?");
     const segments = pathPart.split("/").filter(Boolean);
     const params = {};
+    const decode = (value) => {
+      try {
+        return decodeURIComponent(value);
+      } catch (err) {
+        console.warn("[app] malformed URL escape in hash, using raw value", value, err);
+        return value;
+      }
+    };
     (queryPart || "").split("&").filter(Boolean).forEach((pair) => {
       const [k, v] = pair.split("=");
-      params[decodeURIComponent(k)] = decodeURIComponent((v || "").replace(/\+/g, " "));
+      params[decode(k)] = decode((v || "").replace(/\+/g, " "));
     });
     return { segments, params };
   }
 
   function render(keepScroll) {
+    try {
+      renderRoute(keepScroll);
+    } catch (err) {
+      console.error(err);
+      showFatal("failed to render " + location.hash);
+    }
+  }
+
+  function renderRoute(keepScroll) {
     const { segments, params } = parseHash();
     const head = segments[0] || "";
     const rest = segments.slice(1).join("/");
@@ -875,7 +919,18 @@
   }
 
   /* ------------------------------------------------------------------ events */
-  document.addEventListener("click", function (event) {
+  // Keeps a failing handler from dying silently: the user gets a toast, the console gets the stack.
+  const guard = (label, fn) =>
+    function (event) {
+      try {
+        fn(event);
+      } catch (err) {
+        console.error("[app] " + label + " handler failed", err);
+        toast("Something went wrong. Please try again.");
+      }
+    };
+
+  document.addEventListener("click", guard("click", function (event) {
     const target = event.target.closest("[data-action]");
     if (!target) return;
     const action = target.dataset.action;
@@ -899,6 +954,7 @@
 
       case "search-term": {
         const input = qs("#search-input");
+        if (!input) break;
         input.value = target.dataset.term;
         renderSearchSuggestions(input.value);
         break;
@@ -913,11 +969,12 @@
 
       case "quick-add": {
         const product = C.getByCode(target.dataset.code);
-        if (product) {
-          S.addToCart(product.code, product.sizes[0], 1);
-          renderBadges();
-          openCart();
+        if (!product || !product.sizes.length) {
+          console.error("[app] quick-add for unavailable product", target.dataset.code);
+          toast("This item is currently unavailable.");
+          break;
         }
+        addToCart(product.code, product.sizes[0]);
         break;
       }
 
@@ -933,9 +990,7 @@
           render(true);
           break;
         }
-        S.addToCart(target.dataset.code, pdpState.size, 1);
-        renderBadges();
-        openCart();
+        addToCart(target.dataset.code, pdpState.size);
         break;
       }
 
@@ -1023,19 +1078,21 @@
       default:
         break;
     }
-  });
+  }));
 
-  document.addEventListener("submit", function (event) {
+  document.addEventListener("submit", guard("submit", function (event) {
     const form = event.target.closest("[data-action]");
     if (!form) return;
     event.preventDefault();
     const data = new FormData(form);
 
     switch (form.dataset.action) {
-      case "newsletter":
-        qs("#newsletter-msg").textContent = "Thank you for subscribing. Check your inbox to confirm.";
+      case "newsletter": {
+        const msg = qs("#newsletter-msg");
+        if (msg) msg.textContent = "Thank you for subscribing. Check your inbox to confirm.";
         form.reset();
         break;
+      }
 
       case "checkout-address":
         checkoutState.address = {
@@ -1053,14 +1110,26 @@
         break;
 
       case "checkout-payment":
-        checkoutState.order = S.placeOrder(checkoutState.address);
+        try {
+          checkoutState.order = S.placeOrder(checkoutState.address);
+        } catch (err) {
+          console.error("[app] order could not be placed", err);
+          toast("We could not place your order. Please check your details and try again.");
+          checkoutState.step = "address";
+          render(true);
+          break;
+        }
         checkoutState.step = "address";
         renderBadges();
         render();
         break;
 
       case "sign-in": {
-        const email = data.get("email");
+        const email = String(data.get("email") || "").trim();
+        if (!email) {
+          toast("Please enter your email address.");
+          break;
+        }
         S.signIn({ email: email, firstName: email.split("@")[0], lastName: "" });
         render(true);
         break;
@@ -1069,7 +1138,9 @@
       case "track": {
         const order = S.findOrder(data.get("reference"));
         const kind = form.dataset.kind;
-        qs("#track-result").textContent = order
+        const result = qs("#track-result");
+        if (!result) break;
+        result.textContent = order
           ? kind === "return"
             ? "No return has been requested for order " + order.id + " yet. Returns are free within 14 days."
             : "Order " + order.id + " — " + order.status + ". Estimated delivery within 4/6 business days."
@@ -1080,9 +1151,9 @@
       default:
         break;
     }
-  });
+  }));
 
-  document.addEventListener("input", function (event) {
+  document.addEventListener("input", guard("input", function (event) {
     if (event.target.id === "store-search") {
       const value = event.target.value;
       qs("#view").innerHTML = views.stores(value);
@@ -1090,7 +1161,7 @@
       input.focus();
       input.setSelectionRange(value.length, value.length);
     }
-  });
+  }));
 
   document.addEventListener("keydown", function (event) {
     if (event.key === "Escape") closeOverlays();
@@ -1100,6 +1171,18 @@
     const index = list.indexOf(value);
     if (index === -1) list.push(value);
     else list.splice(index, 1);
+  }
+
+  function addToCart(code, size) {
+    try {
+      S.addToCart(code, size, 1);
+    } catch (err) {
+      console.error("[app] add to cart failed", err);
+      toast("This item could not be added to your bag.");
+      return;
+    }
+    renderBadges();
+    openCart();
   }
 
   function currentQty(code, size) {
@@ -1115,8 +1198,20 @@
   }
 
   /* -------------------------------------------------------------------- boot */
-  renderHeader();
-  renderFooter();
+  window.addEventListener("error", (event) => console.error("[app] uncaught error", event.error || event.message));
+  window.addEventListener("unhandledrejection", (event) => console.error("[app] unhandled rejection", event.reason));
+
+  S.onError((message) => toast(message));
+
+  try {
+    renderHeader();
+    renderFooter();
+  } catch (err) {
+    console.error(err);
+    showFatal("failed to render the page chrome");
+    return;
+  }
+
   window.addEventListener("hashchange", function () {
     closeOverlays();
     if (parseHash().segments[0] !== "checkout") checkoutState.order = null;

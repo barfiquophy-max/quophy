@@ -1,8 +1,13 @@
 // Catalog access helpers over window.CATALOG (assets/js/data.js).
 (function () {
-  const products = window.CATALOG.products;
-  const categories = window.CATALOG.categories;
-  const home = window.CATALOG.home;
+  const data = window.CATALOG;
+  if (!data || !Array.isArray(data.products) || !Array.isArray(data.categories) || !Array.isArray(data.home)) {
+    throw new Error("Catalog data is missing or malformed; assets/js/data.js failed to load.");
+  }
+
+  const products = data.products;
+  const categories = data.categories;
+  const home = data.home;
 
   const byCode = new Map(products.map((p) => [p.code, p]));
   const bySlug = new Map(products.map((p) => [p.slug, p]));
