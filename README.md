@@ -53,5 +53,19 @@ and newsletter signup.
 Cart, wishlist, orders and account are persisted in `localStorage`
 (`ea-cart`, `ea-wishlist`, `ea-orders`, `ea-account`).
 
+## Tests
+
+```
+npm install
+npm test          # vitest run
+npm run coverage  # vitest run --coverage
+```
+
+Tests run in jsdom: `tests/catalog.test.js` and `tests/store.test.js` are unit
+tests over a small catalogue fixture, `tests/content.test.js` checks the static
+site content and its link targets, and `tests/app.test.js` boots the real
+application shell against the full catalogue and drives routing, filters, cart,
+wishlist, checkout and account flows through the DOM.
+
 Product data and imagery are referenced from Armani's public CDN for fidelity;
 this is a technical demo and is not affiliated with Giorgio Armani S.p.A.
