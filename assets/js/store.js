@@ -18,13 +18,42 @@
     }
   };
 
+  const MAX_QUANTITY = 99;
+
+  const text = (value) => (typeof value === "string" ? value.slice(0, 200) : "");
+  const quantity = (value) => {
+    const n = Math.floor(Number(value));
+    if (!Number.isFinite(n) || n < 1) return 1;
+    return Math.min(n, MAX_QUANTITY);
+  };
+
+  // Persisted state is attacker-controllable (another script on the origin, a
+  // shared browser, devtools), so it is re-validated before it reaches the DOM.
+  const cleanCart = (value) =>
+    (Array.isArray(value) ? value : [])
+      .filter((line) => line && typeof line === "object" && typeof line.code === "string")
+      .map((line) => ({ code: text(line.code), size: text(line.size), quantity: quantity(line.quantity) }));
+
+  const cleanWishlist = (value) =>
+    (Array.isArray(value) ? value : []).filter((code) => typeof code === "string").map(text);
+
+  const cleanOrders = (value) =>
+    (Array.isArray(value) ? value : []).filter(
+      (order) => order && typeof order === "object" && typeof order.id === "string" && Array.isArray(order.lines)
+    );
+
+  const cleanAccount = (value) =>
+    value && typeof value === "object"
+      ? { email: text(value.email), firstName: text(value.firstName), lastName: text(value.lastName) }
+      : null;
+
   const listeners = [];
 
   const Store = {
-    cart: read(KEYS.cart, []),
-    wishlist: read(KEYS.wishlist, []),
-    orders: read(KEYS.orders, []),
-    account: read(KEYS.account, null),
+    cart: cleanCart(read(KEYS.cart, [])),
+    wishlist: cleanWishlist(read(KEYS.wishlist, [])),
+    orders: cleanOrders(read(KEYS.orders, [])),
+    account: cleanAccount(read(KEYS.account, null)),
 
     subscribe(fn) {
       listeners.push(fn);
@@ -55,18 +84,18 @@
       return this.subtotal() + this.shipping();
     },
 
-    addToCart(code, size, quantity) {
-      const qty = quantity || 1;
+    addToCart(code, size, qty) {
+      const amount = quantity(qty);
       const existing = this.cart.find((l) => l.code === code && l.size === size);
-      if (existing) existing.quantity += qty;
-      else this.cart.push({ code: code, size: size, quantity: qty });
+      if (existing) existing.quantity = quantity(existing.quantity + amount);
+      else this.cart.push({ code: text(code), size: text(size), quantity: amount });
       write(KEYS.cart, this.cart);
       this.emit();
     },
-    updateQuantity(code, size, quantity) {
-      if (quantity < 1) return this.removeFromCart(code, size);
+    updateQuantity(code, size, qty) {
+      if (Number(qty) < 1) return this.removeFromCart(code, size);
       const line = this.cart.find((l) => l.code === code && l.size === size);
-      if (line) line.quantity = quantity;
+      if (line) line.quantity = quantity(qty);
       write(KEYS.cart, this.cart);
       this.emit();
     },
@@ -86,7 +115,7 @@
     },
     toggleWishlist(code) {
       if (this.isWishlisted(code)) this.wishlist = this.wishlist.filter((c) => c !== code);
-      else this.wishlist = this.wishlist.concat(code);
+      else this.wishlist = this.wishlist.concat(text(code));
       write(KEYS.wishlist, this.wishlist);
       this.emit();
     },
@@ -119,8 +148,8 @@
     },
 
     signIn(account) {
-      this.account = account;
-      write(KEYS.account, account);
+      this.account = cleanAccount(account);
+      write(KEYS.account, this.account);
       this.emit();
     },
     signOut() {
