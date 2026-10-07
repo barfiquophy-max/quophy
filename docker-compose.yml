@@ -1,0 +1,14 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: quophy-pg
+    environment:
+      POSTGRES_USER: quophy
+      POSTGRES_PASSWORD: quophy_dev_pw
+      POSTGRES_DB: quophy
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+volumes:
+  pgdata:
