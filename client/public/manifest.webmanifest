@@ -1,0 +1,9 @@
+{
+  "name": "Quophy — Crop Pest & Disease Alert System",
+  "short_name": "Quophy",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f6f8f5",
+  "theme_color": "#16432a",
+  "icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }]
+}
