@@ -22,7 +22,8 @@ const registerSchema = z.object({
   phone: z.string().regex(/^\+?[0-9\s-]{7,15}$/, 'Please enter a valid phone number').optional().or(z.literal('')),
   password: passwordSchema,
   location: z.string().max(200).optional().or(z.literal('')),
-  role: z.enum(['farmer', 'expert', 'admin']).default('farmer'),
+  // Admins are provisioned by existing admins — never through public signup.
+  role: z.enum(['farmer', 'expert']).default('farmer'),
   acceptTerms: z.literal(true, { errorMap: () => ({ message: 'You must accept the Terms & Conditions' }) }),
   acceptPrivacy: z.literal(true, { errorMap: () => ({ message: 'You must accept the Privacy Policy' }) }),
 });

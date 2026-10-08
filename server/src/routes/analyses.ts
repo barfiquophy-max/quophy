@@ -133,7 +133,7 @@ analysesRouter.post('/', upload.single('image'), async (req: AuthedRequest, res)
         result.status === 'healthy'
           ? 'Good news — your crop looks healthy.'
           : `${result.condition} (${Math.round(result.confidence * 100)}% confidence). Tap to view recommendations.`,
-        `/analyses/${rows[0].id}`,
+        `/app/analyses/${rows[0].id}`,
       ],
     );
     return rows[0];

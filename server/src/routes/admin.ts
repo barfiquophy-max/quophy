@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import bcrypt from 'bcryptjs';
 import { z } from 'zod';
-import { query } from '../db/pool.js';
+import { query, withTransaction } from '../db/pool.js';
 import { requireAuth, requireRole, type AuthedRequest } from '../middleware/auth.js';
 import { validate } from '../middleware/validate.js';
 import { HttpError } from '../middleware/error.js';
@@ -137,22 +137,25 @@ adminRouter.get('/alerts', async (_req, res) => {
 
 adminRouter.post('/alerts', validate(alertSchema), async (req: AuthedRequest, res) => {
   const b = req.body;
-  const { rows } = await query(
-    `INSERT INTO alerts (title, message, alert_type, location, severity, created_by)
-     VALUES ($1,$2,$3,$4,$5,$6) RETURNING *`,
-    [b.title, b.message, b.alertType, b.location || null, b.severity, req.user!.id],
-  );
-  // Fan out to matching farmers as notifications.
-  await query(
-    `INSERT INTO notifications (user_id, title, message, type)
-     SELECT u.id, $1, $2, 'alert' FROM users u
-     WHERE u.role = 'farmer' AND (
-       $3 IS NULL OR $3 = '' OR u.location IS NULL OR u.location = ''
-       OR u.location ILIKE '%' || $3 || '%' OR $3 ILIKE '%' || u.location || '%'
-     )`,
-    [b.title, b.message, b.location || null],
-  );
-  res.status(201).json({ alert: rows[0] });
+  const alert = await withTransaction(async (client) => {
+    const { rows } = await client.query(
+      `INSERT INTO alerts (title, message, alert_type, location, severity, created_by)
+       VALUES ($1,$2,$3,$4,$5,$6) RETURNING *`,
+      [b.title, b.message, b.alertType, b.location || null, b.severity, req.user!.id],
+    );
+    // Fan out to matching farmers as notifications.
+    await client.query(
+      `INSERT INTO notifications (user_id, title, message, type)
+       SELECT u.id, $1, $2, 'alert' FROM users u
+       WHERE u.role = 'farmer' AND (
+         COALESCE($3::text, '') = '' OR COALESCE(u.location, '') = ''
+         OR u.location ILIKE '%' || $3::text || '%' OR $3::text ILIKE '%' || u.location || '%'
+       )`,
+      [b.title, b.message, b.location || null],
+    );
+    return rows[0];
+  });
+  res.status(201).json({ alert });
 });
 
 adminRouter.patch('/alerts/:id', validate(alertSchema.partial()), async (req, res) => {

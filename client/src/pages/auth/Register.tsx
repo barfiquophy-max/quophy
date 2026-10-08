@@ -70,8 +70,8 @@ export default function Register() {
         <Select label="I am a…" value={form.role} onChange={set('role')}>
           <option value="farmer">Farmer</option>
           <option value="expert">Agricultural Expert</option>
-          <option value="admin">Administrator</option>
         </Select>
+        <p className="-mt-3 text-xs text-stone-400">Administrator accounts are created by existing admins.</p>
         <div>
           <Field label="Password" type="password" value={form.password} onChange={set('password')} placeholder="At least 8 characters" required autoComplete="new-password" />
           {form.password && (

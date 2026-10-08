@@ -77,7 +77,7 @@ expertRouter.patch(
           b.recommendation
             ? `Expert advice: ${String(b.recommendation).slice(0, 140)}`
             : 'An agricultural expert has responded to your case.',
-          `/analyses/${review.analysis_id}`,
+          `/app/analyses/${review.analysis_id}`,
         ],
       );
     }

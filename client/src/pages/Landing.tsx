@@ -101,7 +101,7 @@ export default function Landing() {
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link
-                to={user ? `${appHome}/analyze` : '/register'}
+                to={!user ? '/register' : user.role === 'farmer' ? '/app/analyze' : appHome}
                 className="inline-flex items-center gap-2 rounded-xl bg-brand-700 px-6 py-3.5 font-semibold text-white shadow-lift transition hover:bg-brand-800"
               >
                 Analyze Your Crop <ChevronRight size={18} />

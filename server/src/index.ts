@@ -1,3 +1,4 @@
+import './middleware/asyncify.js'; // must load before any router is built
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
